@@ -1,0 +1,80 @@
+# SLM Forge — Root .gitignore
+
+# Node
+node_modules/
+.npm
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/.vercel
+
+# Environment files
+.env
+.env.local
+.env.*.local
+api/.env
+ml-worker/.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ml-worker/venv/
+ml-worker/.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# ML / HuggingFace cache
+hf_cache/
+*.safetensors
+*.bin
+*.gguf
+*.pt
+*.pth
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads / Models (local storage)
+api/uploads/
+api/models/
+ml-worker/uploads/
+ml-worker/models/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Prisma
+api/prisma/*.db
+api/prisma/migrations/
+
+# TypeScript build
+api/dist/
+api/build/

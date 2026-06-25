@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  projects  Project[]
+}
+
+model Project {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  baseModelId    String
+  status         String          @default("draft")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  dataset        Dataset?
+  jobs           Job[]
+  evaluation     Evaluation?
+  trainingConfig TrainingConfig?
+}
+
+model Dataset {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filePath  String?
+  rows      String   // JSON array of {id, instruction, input, output}
+  formatted Boolean  @default(false)
+  rowCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingConfig {
+  id           String  @id @default(cuid())
+  projectId    String  @unique
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  epochs       Int     @default(3)
+  learningRate Float   @default(0.0002)
+  loraRank     Int     @default(16)
+  loraAlpha    Int     @default(32)
+  loraDropout  Float   @default(0.1)
+  batchSize    Int     @default(4)
+  warmupSteps  Int     @default(10)
+  maxSeqLength Int     @default(512)
+  useQLoRA     Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Job {
+  id           String    @id @default(cuid())
+  projectId    String
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type         String    // training | export | evaluation | deploy
+  status       String    @default("pending")
+  progress     Float     @default(0)
+  metrics      String?   // JSON: {loss: [], evalLoss: [], epochs: []}
+  errorMessage String?
+  outputPath   String?
+  bullJobId    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  completedAt  DateTime?
+}
+
+model BaseModel {
+  id            String  @id
+  name          String
+  hfModelId     String
+  description   String
+  paramCount    String
+  maxVram       Int
+  targetModules String  // JSON array of module names
+  isActive      Boolean @default(true)
+}
+
+model Evaluation {
+  id          String  @id @default(cuid())
+  projectId   String  @unique
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  bleuScore   Float?
+  rougeL      Float?
+  rouge1      Float?
+  rouge2      Float?
+  comparisons String  // JSON array of {instruction, input, reference, baseOutput, finetunedOutput, bleu, rougeL}
+  createdAt   DateTime @default(now())
+}

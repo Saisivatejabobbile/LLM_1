@@ -1,0 +1,133 @@
+version: '3.9'
+
+services:
+  # ─────────────────────────────────────────
+  # Redis (BullMQ job queue broker)
+  # ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: slm_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - slm_network
+
+  # ─────────────────────────────────────────
+  # Express.js API Gateway + BullMQ
+  # ─────────────────────────────────────────
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: slm_api
+    restart: unless-stopped
+    env_file:
+      - ./api/.env
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: "file:/app/data/slm.db"
+      REDIS_URL: "redis://redis:6379"
+      ML_WORKER_URL: "http://ml-worker:8000"
+      JWT_SECRET: "${JWT_SECRET:-slm_forge_jwt_secret_change_in_production}"
+      UPLOAD_DIR: "/app/uploads"
+      MODELS_DIR: "/app/models"
+    ports:
+      - "4000:4000"
+    volumes:
+      - uploads_data:/app/uploads
+      - models_data:/app/models
+      - db_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - slm_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ─────────────────────────────────────────
+  # Next.js 14 Frontend
+  # ─────────────────────────────────────────
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: slm_web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:4000"
+      NEXT_PUBLIC_WS_URL: "ws://localhost:4000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - slm_network
+
+  # ─────────────────────────────────────────
+  # Python FastAPI ML Worker
+  # ─────────────────────────────────────────
+  ml-worker:
+    build:
+      context: ./ml-worker
+      dockerfile: Dockerfile
+    container_name: slm_ml_worker
+    restart: unless-stopped
+    environment:
+      API_CALLBACK_URL: "http://api:4000"
+      UPLOAD_DIR: "/app/uploads"
+      MODELS_DIR: "/app/models"
+      HF_HOME: "/app/hf_cache"
+      TRANSFORMERS_CACHE: "/app/hf_cache"
+      PYTHONDONTWRITEBYTECODE: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads_data:/app/uploads
+      - models_data:/app/models
+      - hf_cache:/app/hf_cache
+    # GPU support — uncomment for NVIDIA CUDA
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    networks:
+      - slm_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 20s
+      timeout: 15s
+      retries: 5
+
+# ─────────────────────────────────────────
+# Named Volumes
+# ─────────────────────────────────────────
+volumes:
+  redis_data:
+  uploads_data:
+  models_data:
+  db_data:
+  hf_cache:
+
+# ─────────────────────────────────────────
+# Internal Network
+# ─────────────────────────────────────────
+networks:
+  slm_network:
+    driver: bridge
