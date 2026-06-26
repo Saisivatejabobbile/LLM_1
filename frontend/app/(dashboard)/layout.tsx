@@ -2,27 +2,27 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Sidebar from '@/components/layout/Sidebar'
-import Header from '@/components/layout/Header'
-import { useAuth } from '@/components/auth/AuthProvider'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { Header } from '@/components/layout/Header'
+import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    if (!loading) {
+    if (!isLoading) {
       if (!user) {
         router.push('/login')
       } else {
         setChecking(false)
       }
     }
-  }, [user, loading, router])
+  }, [user, isLoading, router])
 
-  if (loading || checking) {
+  if (isLoading || checking) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center space-y-4 text-slate-400">
         <Loader2 className="h-10 w-10 text-purple-500 animate-spin" />

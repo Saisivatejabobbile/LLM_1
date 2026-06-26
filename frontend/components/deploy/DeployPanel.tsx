@@ -186,7 +186,7 @@ export default function DeployPanel({ project }: DeployPanelProps) {
           <div className="flex gap-3">
             <Button
               onClick={triggerExport}
-              disabled={exporting || (exportJob && exportJob.status === 'running')}
+              disabled={exporting || exportJob?.status === 'running'}
               className="bg-purple-600 hover:bg-purple-700 text-white font-medium gap-2 flex items-center"
             >
               {exporting ? 'Processing GGUF...' : 'Compile to GGUF'}

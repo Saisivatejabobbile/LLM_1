@@ -68,6 +68,7 @@ export type JobStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancel
 export interface TrainingJob {
   id: string
   projectId: string
+  type: 'training' | 'export' | 'evaluation' | 'deploy'
   status: JobStatus
   config: TrainingConfig
   progress: number
@@ -77,6 +78,8 @@ export interface TrainingJob {
   totalSteps: number
   loss?: number
   evalLoss?: number
+  metrics?: string | any
+  errorMessage?: string
   logs: string[]
   startedAt?: string
   completedAt?: string

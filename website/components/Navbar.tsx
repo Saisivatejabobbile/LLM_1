@@ -1,120 +1,170 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Menu, X, Zap, ChevronDown } from "lucide-react";
+import { Zap, Menu, X, ArrowRight } from "lucide-react";
 
-const navItems = [
-  { label: "Features", href: "#features" },
+const links = [
+  { label: "Features",     href: "#features" },
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Models", href: "#models" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "#docs" },
+  { label: "Models",       href: "#models" },
+  { label: "Pricing",      href: "#pricing" },
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const fn = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   return (
     <>
-      <motion.header
-        initial={{ y: -80, opacity: 0 }}
+      <motion.nav
+        initial={{ y: -64, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "py-3 glass border-b border-white/[0.06] shadow-xl"
-            : "py-5"
-        }`}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s",
+          background: scrolled ? "rgba(8,14,26,0.92)" : "transparent",
+          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
+        }}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "0 24px",
+            height: 64,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/30 group-hover:shadow-violet-500/50 transition-shadow duration-300">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 blur-md opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
+                flexShrink: 0,
+              }}
+            >
+              <Zap size={18} color="#fff" />
             </div>
-            <span className="text-xl font-bold gradient-text">SLM Forge</span>
+            <span style={{ fontWeight: 700, fontSize: "1.125rem", letterSpacing: "-0.02em" }} className="text-gradient">
+              SLM Forge
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
+          {/* Desktop Links */}
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }} className="hidden md:flex">
+            {links.map((l) => (
               <a
-                key={item.label}
-                href={item.href}
-                className="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-lg hover:bg-white/[0.06] transition-all duration-200 font-medium"
+                key={l.label}
+                href={l.href}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: "#94a3b8",
+                  textDecoration: "none",
+                  transition: "color 0.2s, background 0.2s",
+                }}
+                onMouseEnter={(e) => { (e.target as HTMLElement).style.color = "#f1f5f9"; (e.target as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={(e) => { (e.target as HTMLElement).style.color = "#94a3b8"; (e.target as HTMLElement).style.background = "transparent"; }}
               >
-                {item.label}
+                {l.label}
               </a>
             ))}
-          </nav>
+          </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm text-slate-400 hover:text-white px-4 py-2 rounded-lg hover:bg-white/[0.06] transition-all duration-200 font-medium"
+          {/* Desktop CTAs */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }} className="hidden md:flex">
+            <Link href="/login" style={{ padding: "8px 16px", fontSize: "0.875rem", fontWeight: 500, color: "#94a3b8", textDecoration: "none", borderRadius: 8, transition: "color 0.2s" }}
+              onMouseEnter={(e) => ((e.target as HTMLElement).style.color = "#f1f5f9")}
+              onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "#94a3b8")}
             >
               Sign In
             </Link>
-            <Link
-              href="/register"
-              className="btn-primary text-sm text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2"
-            >
-              <span>Get Started Free</span>
-              <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-md">↗</span>
+            <Link href="/register" className="btn-primary" style={{ padding: "9px 20px", fontSize: "0.875rem", borderRadius: 10 }}>
+              Get Started Free
+              <ArrowRight size={15} />
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile toggle */}
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            className="md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: 8 }}
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-      </motion.header>
+      </motion.nav>
 
       {/* Mobile menu */}
       <AnimatePresence>
-        {mobileOpen && (
+        {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="fixed top-[64px] left-0 right-0 z-40 glass border-b border-white/[0.06] md:hidden"
+            key="mobile-menu"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            style={{
+              position: "fixed",
+              top: 64,
+              left: 0,
+              right: 0,
+              zIndex: 99,
+              background: "rgba(8,14,26,0.97)",
+              borderBottom: "1px solid rgba(255,255,255,0.07)",
+              backdropFilter: "blur(20px)",
+              padding: "16px 24px 20px",
+            }}
           >
-            <div className="px-6 py-4 flex flex-col gap-2">
-              {navItems.map((item) => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {links.map((l) => (
                 <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="text-slate-300 hover:text-white py-2.5 px-3 rounded-lg hover:bg-white/[0.06] transition-all duration-200 font-medium"
+                  key={l.label}
+                  href={l.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    fontSize: "0.9375rem",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                    textDecoration: "none",
+                  }}
                 >
-                  {item.label}
+                  {l.label}
                 </a>
               ))}
-              <div className="h-px bg-white/[0.08] my-2" />
-              <Link href="/login" className="text-slate-300 py-2.5 px-3 rounded-lg hover:bg-white/[0.06] font-medium">
+              <div style={{ height: 1, background: "rgba(255,255,255,0.07)", margin: "8px 0" }} />
+              <Link href="/login" onClick={() => setMenuOpen(false)} style={{ padding: "12px 14px", fontSize: "0.9375rem", color: "#94a3b8", textDecoration: "none", fontWeight: 500 }}>
                 Sign In
               </Link>
-              <Link
-                href="/register"
-                className="btn-primary text-white py-3 px-4 rounded-xl font-semibold text-center"
-              >
+              <Link href="/register" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ marginTop: 4, borderRadius: 10, justifyContent: "center" }}>
                 Get Started Free
               </Link>
             </div>

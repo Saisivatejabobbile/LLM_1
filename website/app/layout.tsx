@@ -1,54 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "SLM Forge — Fine-Tune AI Models Without Code",
+  title: "SLM Forge — Fine-Tune Small Language Models Without Code",
   description:
-    "The world's most powerful no-code platform for fine-tuning small language models. Train Phi-3, Gemma, Llama, and more using LoRA/QLoRA — no ML expertise required.",
-  keywords: [
-    "fine-tuning",
-    "LLM",
-    "small language models",
-    "LoRA",
-    "QLoRA",
-    "AI platform",
-    "no-code AI",
-    "Phi-3",
-    "Gemma",
-    "Llama",
-  ],
-  authors: [{ name: "SLM Forge Team" }],
+    "Train Phi-3, Gemma 2, Llama 3.2, Mistral 7B and Qwen2.5 on your domain data using LoRA/QLoRA. Export GGUF models for Ollama in one click — no ML expertise required.",
+  keywords: ["LLM fine-tuning", "LoRA", "QLoRA", "Ollama", "no-code AI", "Phi-3", "Llama", "Gemma"],
+  metadataBase: new URL("https://slmforge.ai"),
   openGraph: {
-    title: "SLM Forge — Fine-Tune AI Models Without Code",
-    description: "Train powerful AI models on your domain data. Export to Ollama in one click.",
+    title: "SLM Forge — Fine-Tune AI Without Code",
+    description: "The no-code platform for domain-specific AI fine-tuning.",
     type: "website",
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#0B1120] text-slate-100 selection:bg-violet-500/30 selection:text-violet-200`}
-        suppressHydrationWarning
-      >
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable}`} suppressHydrationWarning>
         {children}
       </body>
     </html>

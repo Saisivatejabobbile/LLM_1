@@ -27,7 +27,7 @@ const upload = multer({
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const allowed = config.upload.allowedExtensions;
-    if (!allowed.includes(ext)) {
+    if (!allowed.includes(ext as any)) {
       cb(new Error(`File type not allowed. Allowed: ${allowed.join(', ')}`));
       return;
     }
