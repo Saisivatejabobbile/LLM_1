@@ -71,44 +71,12 @@ const baseModels = [
   },
 ];
 
-async function main() {
-  console.log('Starting database seed...');
-
-  // 1. Seed base models
-  for (const model of baseModels) {
-    await prisma.baseModel.upsert({
-      where: { id: model.id },
-      update: model,
-      create: model,
-    });
-    console.log(`Seeded BaseModel: ${model.name}`);
-  }
-
-  // 2. Seed demo user
-  const demoEmail = 'demo@slmforge.ai';
-  const hashedPassword = await bcrypt.hash('password123', 10);
-  const demoUser = await prisma.user.upsert({
-    where: { email: demoEmail },
-    update: {
-      password: hashedPassword,
-      name: 'Dr. John Doe',
-    },
-    create: {
-      email: demoEmail,
-      password: hashedPassword,
-      name: 'Dr. John Doe',
-    },
-  });
-  console.log(`Seeded User: ${demoUser.email} (Password: password123)`);
-
-  // 3. Clear existing user data so we get a clean demo environment
-  await prisma.project.deleteMany({ where: { userId: demoUser.id } });
-
-  // 4. Create medical project (completed)
+async function seedUserProjects(userId: string, prefix: string) {
+  // 1. Create medical project (completed)
   const medProject = await prisma.project.create({
     data: {
-      id: 'proj-medical-qa',
-      userId: demoUser.id,
+      id: `${prefix}-proj-medical-qa`,
+      userId,
       name: 'Clinical Diagnosis QA',
       description: 'Fine-tuning Phi-3 on medical diagnosis instruction sets to improve accuracy on clinical QA tasks.',
       baseModelId: 'phi-3-mini',
@@ -164,7 +132,7 @@ async function main() {
   // Seed training job for medical project
   await prisma.job.create({
     data: {
-      id: 'job-medical-training',
+      id: `${prefix}-job-medical-training`,
       projectId: medProject.id,
       type: 'training',
       status: 'completed',
@@ -210,11 +178,11 @@ async function main() {
     },
   });
 
-  // 5. Create legal summarizer (training)
+  // 2. Create legal summarizer (training)
   const legalProject = await prisma.project.create({
     data: {
-      id: 'proj-legal-summarizer',
-      userId: demoUser.id,
+      id: `${prefix}-proj-legal-summarizer`,
+      userId,
       name: 'Contracts Summarizer',
       description: 'Adapting Llama 3.2 to write high-quality summaries of NDA and procurement agreements.',
       baseModelId: 'llama-3.2-3b',
@@ -259,7 +227,7 @@ async function main() {
 
   await prisma.job.create({
     data: {
-      id: 'job-legal-training',
+      id: `${prefix}-job-legal-training`,
       projectId: legalProject.id,
       type: 'training',
       status: 'running',
@@ -270,11 +238,11 @@ async function main() {
     },
   });
 
-  // 6. Create code project (draft)
+  // 3. Create code project (draft)
   const codeProject = await prisma.project.create({
     data: {
-      id: 'proj-code-assistant',
-      userId: demoUser.id,
+      id: `${prefix}-proj-code-assistant`,
+      userId,
       name: 'Internal APIs CodeGen',
       description: 'Fine-tuning Qwen 2.5 on internal API endpoints documentation to generate code snippets.',
       baseModelId: 'qwen2.5-3b',
@@ -290,6 +258,69 @@ async function main() {
       rows: '[]',
     },
   });
+}
+
+async function main() {
+  console.log('Starting database seed...');
+
+  // 1. Seed base models
+  for (const model of baseModels) {
+    await prisma.baseModel.upsert({
+      where: { id: model.id },
+      update: model,
+      create: model,
+    });
+    console.log(`Seeded BaseModel: ${model.name}`);
+  }
+
+  // 2. Seed users
+  const demoEmail = 'demo@slmforge.ai';
+  const adminEmail = 'admin@slmforge.ai';
+  const hashedPassword = await bcrypt.hash('password123', 10);
+  
+  const demoUser = await prisma.user.upsert({
+    where: { email: demoEmail },
+    update: {
+      password: hashedPassword,
+      name: 'Dr. John Doe',
+    },
+    create: {
+      email: demoEmail,
+      password: hashedPassword,
+      name: 'Dr. John Doe',
+    },
+  });
+  console.log(`Seeded User: ${demoUser.email} (Password: password123)`);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      password: hashedPassword,
+      name: 'Dr. John Doe',
+    },
+    create: {
+      email: adminEmail,
+      password: hashedPassword,
+      name: 'Dr. John Doe',
+    },
+  });
+  console.log(`Seeded User: ${adminUser.email} (Password: password123)`);
+
+  // 3. Clear existing user data so we get a clean demo environment
+  await prisma.project.deleteMany({
+    where: {
+      userId: {
+        in: [demoUser.id, adminUser.id],
+      },
+    },
+  });
+
+  // 4. Seed projects for both users
+  await seedUserProjects(demoUser.id, 'demo');
+  console.log('Seeded projects for demo@slmforge.ai');
+
+  await seedUserProjects(adminUser.id, 'admin');
+  console.log('Seeded projects for admin@slmforge.ai');
 
   console.log('Database seed completed successfully.');
 }
